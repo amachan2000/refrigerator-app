@@ -1,0 +1,56 @@
+services:
+  # 1. データベースサービス (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. バックエンドサービス (Go GraphQLサーバー)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: go_backend
+    restart: always
+    ports:
+      - "8080:8080" # Goサーバーのポート
+    depends_on:
+      - db
+    environment:
+      # DB接続設定を環境変数から渡す
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    volumes:
+      - ./backend:/app # 開発時のホットリロード用
+
+  # 3. フロントエンドサービス (React + Vite)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: react_frontend
+    ports:
+      - "5173:5173" # Vite 開発サーバーのポート
+    depends_on:
+      - backend
+    environment:
+      # バックエンドの GraphQL エンドポイントを設定
+      REACT_APP_GRAPHQL_URI: http://localhost:8080/graphql
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - /app/node_modules
+
+volumes:
+  postgres_data:
