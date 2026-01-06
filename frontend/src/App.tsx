@@ -1,8 +1,19 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
+type FoodItem = {
+  id: number;
+  name: string;
+  quantity: number;
+  unit: string;
+  expiryDate: string;
+  location: string;
+  category: string;
+  createdAt: string;
+};
+
 function App() {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<FoodItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
