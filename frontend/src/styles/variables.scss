@@ -1,0 +1,32 @@
+// カラー変数
+$primary-color: #646cff;
+$primary-hover: #535bf2;
+$background-dark: #242424;
+$background-light: #ffffff;
+$text-dark: rgba(255, 255, 255, 0.87);
+$text-light: #213547;
+$border-color: #ddd;
+$error-color: red;
+
+// スペーシング
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+
+// フォント
+$font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+$font-size-base: 1em;
+$font-size-lg: 3.2em;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$line-height-base: 1.5;
+$line-height-heading: 1.1;
+
+// ボーダー
+$border-radius: 8px;
+$border-width: 1px;
+
+// トランジション
+$transition-speed: 0.25s;

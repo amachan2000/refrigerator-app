@@ -1,0 +1,41 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+.food-item-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: $spacing-lg;
+
+  thead {
+    background-color: rgba($primary-color, 0.1);
+
+    th {
+      @include table-cell;
+      font-weight: $font-weight-medium;
+      text-align: left;
+      background-color: rgba($primary-color, 0.05);
+    }
+  }
+
+  tbody {
+    tr {
+      &:hover {
+        background-color: rgba($primary-color, 0.05);
+      }
+
+      &:nth-child(even) {
+        background-color: rgba(0, 0, 0, 0.02);
+      }
+    }
+
+    td {
+      @include table-cell;
+    }
+  }
+
+  @include light-mode {
+    tbody tr:nth-child(even) {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+  }
+}

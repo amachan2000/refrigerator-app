@@ -1,0 +1,69 @@
+@import './variables.scss';
+@import './mixins.scss';
+
+:root {
+  font-family: $font-family;
+  line-height: $line-height-base;
+  font-weight: $font-weight-normal;
+
+  color-scheme: light dark;
+  color: $text-dark;
+  background-color: $background-dark;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: $font-weight-medium;
+  color: $primary-color;
+  text-decoration: inherit;
+
+  &:hover {
+    color: $primary-hover;
+  }
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: $font-size-lg;
+  line-height: $line-height-heading;
+}
+
+button {
+  @include button-base;
+  background-color: #1a1a1a;
+
+  &:hover {
+    border-color: $primary-color;
+  }
+
+  &:focus,
+  &:focus-visible {
+    outline: 4px auto -webkit-focus-ring-color;
+  }
+}
+
+@include light-mode {
+  :root {
+    color: $text-light;
+    background-color: $background-light;
+  }
+
+  a:hover {
+    color: #747bff;
+  }
+
+  button {
+    background-color: #f9f9f9;
+  }
+}

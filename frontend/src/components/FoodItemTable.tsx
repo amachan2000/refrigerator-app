@@ -1,4 +1,5 @@
 import { type FoodItem } from "../types";
+import "../styles/FoodItemTable.scss";
 
 type FoodItemTableProps = {
   items: FoodItem[];
@@ -6,42 +7,28 @@ type FoodItemTableProps = {
 
 export const FoodItemTable = ({ items }: FoodItemTableProps) => {
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <table className="food-item-table">
       <thead>
         <tr>
-          <th style={{ border: "1px solid #ddd", padding: "8px" }}>ID</th>
-          <th style={{ border: "1px solid #ddd", padding: "8px" }}>名前</th>
-          <th style={{ border: "1px solid #ddd", padding: "8px" }}>数量</th>
-          <th style={{ border: "1px solid #ddd", padding: "8px" }}>単位</th>
-          <th style={{ border: "1px solid #ddd", padding: "8px" }}>賞味期限</th>
-          <th style={{ border: "1px solid #ddd", padding: "8px" }}>保管場所</th>
-          <th style={{ border: "1px solid #ddd", padding: "8px" }}>カテゴリ</th>
+          <th>ID</th>
+          <th>名前</th>
+          <th>数量</th>
+          <th>単位</th>
+          <th>賞味期限</th>
+          <th>保管場所</th>
+          <th>カテゴリ</th>
         </tr>
       </thead>
       <tbody>
         {items.map((item) => (
           <tr key={item.id}>
-            <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-              {item.id}
-            </td>
-            <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-              {item.name}
-            </td>
-            <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-              {item.quantity}
-            </td>
-            <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-              {item.unit}
-            </td>
-            <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-              {item.expiryDate}
-            </td>
-            <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-              {item.location}
-            </td>
-            <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-              {item.category}
-            </td>
+            <td>{item.id}</td>
+            <td>{item.name}</td>
+            <td>{item.quantity}</td>
+            <td>{item.unit}</td>
+            <td>{item.expiryDate}</td>
+            <td>{item.location}</td>
+            <td>{item.category}</td>
           </tr>
         ))}
       </tbody>
