@@ -1,0 +1,29 @@
+@use "./variables" as *;
+@use "./mixins" as *;
+
+.food-item-card {
+  @include card;
+  width: 100%;
+  margin: 0 auto;
+  padding: $spacing-md;
+  border: $border-width solid $border-color;
+}
+
+.content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.name-area {
+  flex: 1;
+}
+
+.quantity-area {
+  display: flex;
+  flex-direction: row;
+  background-color: $background-dark;
+  color: $text-dark;
+  padding: $spacing-sm;
+  border-radius: $border-radius;
+}

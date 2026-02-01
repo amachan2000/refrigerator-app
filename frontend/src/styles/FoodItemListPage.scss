@@ -1,16 +1,10 @@
 @use "./variables" as *;
 @use "./mixins" as *;
 
-.card {
-  @include card;
-  width: 100%;
-  margin: 0 auto;
-  padding: $spacing-xl;
-
-  h1 {
-    margin-bottom: $spacing-lg;
-    text-align: center;
-  }
+.food-item-cards {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
 }
 
 .error {
