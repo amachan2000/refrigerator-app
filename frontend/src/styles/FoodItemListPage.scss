@@ -1,0 +1,25 @@
+@use "./variables" as *;
+@use "./mixins" as *;
+
+.card {
+  @include card;
+  width: 100%;
+  margin: 0 auto;
+  padding: $spacing-xl;
+
+  h1 {
+    margin-bottom: $spacing-lg;
+    text-align: center;
+  }
+}
+
+.error {
+  color: $error-color;
+  padding: $spacing-sm;
+  margin: $spacing-md 0;
+}
+
+.loading {
+  padding: $spacing-md;
+  text-align: center;
+}
