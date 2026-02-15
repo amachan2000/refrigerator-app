@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import "../styles/Modal.scss";
 
 type ModalProps = {
@@ -8,6 +9,23 @@ type ModalProps = {
 };
 
 export const Modal = ({ isOpen, onClose, title, content }: ModalProps) => {
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
