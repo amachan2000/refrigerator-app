@@ -64,9 +64,31 @@ var rootQuery = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
-var schema, _ = graphql.NewSchema(graphql.SchemaConfig{
-	Query: rootQuery,
+var rootMutation = graphql.NewObject(graphql.ObjectConfig{
+	Name: "RootMutation",
+	Fields: graphql.Fields{
+			"addFoodItem": &graphql.Field{
+					Type:        foodItemType,
+					Description: "食材を追加する",
+					Args: graphql.FieldConfigArgument{
+							"name":       &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+							"quantity":   &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.Int)},
+							"unit":       &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+							"expiryDate": &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+							"location":   &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+							"category":   &graphql.ArgumentConfig{Type: graphql.NewNonNull(graphql.String)},
+					},
+					Resolve: resolveAddFoodItem,
+			},
+	},
 })
+
+func newSchema() (graphql.Schema, error) {
+	return graphql.NewSchema(graphql.SchemaConfig{
+		Query:    rootQuery,
+		Mutation: rootMutation,
+	})
+}
 
 func resolveAddFoodItem(p graphql.ResolveParams) (interface{}, error) {
 	// 引数 (Arguments) を取得
@@ -106,6 +128,12 @@ func main() {
 	_, err := initDB()
 	if err != nil {
 		log.Fatalf("Database connection error: %v", err)
+	}
+
+	// スキーマ生成時のエラーを握りつぶさない
+	schema, err := newSchema()
+	if err != nil {
+		log.Fatalf("GraphQL schema initialization error: %v", err)
 	}
 
 	// GraphQLハンドラの設定

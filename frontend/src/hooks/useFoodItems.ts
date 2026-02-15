@@ -6,42 +6,44 @@ export const useFoodItems = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch("http://localhost:8080/graphql", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            query: `
-              query {
-                getFoodItems {
-                  id
-                  name
-                  quantity
-                  unit
-                  expiryDate
-                  location
-                  category
-                  createdAt
-                }
+  const refetchItems = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await fetch("http://localhost:8080/graphql", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: `
+            query {
+              getFoodItems {
+                id
+                name
+                quantity
+                unit
+                expiryDate
+                location
+                category
+                createdAt
               }
-            `,
-          }),
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (data.errors) throw new Error(data.errors[0].message);
-        setItems(data.data.getFoodItems || []);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchItems();
+            }
+          `,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.errors) throw new Error(data.errors[0].message);
+      setItems(data.data.getFoodItems || []);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void refetchItems();
   }, []);
 
-  return { items, loading, error };
+  return { items, loading, error, refetchItems };
 };
