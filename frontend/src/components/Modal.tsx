@@ -1,3 +1,5 @@
+import "../styles/Modal.scss";
+
 type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -17,8 +19,8 @@ export const Modal = ({ isOpen, onClose, title, content }: ModalProps) => {
         }}
       >
         {title && <h2 className="modal-title">{title}</h2>}
+        <div className="modal-content">{content}</div>
       </div>
-      <div className="modal-content">{content}</div>
     </div>
   );
 };
