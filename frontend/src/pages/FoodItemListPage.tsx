@@ -3,20 +3,38 @@ import { useFoodItems } from "../hooks/useFoodItems";
 import { FoodItemCard } from "../components/FoodItemCard";
 import { useState } from "react";
 import { Modal } from "../components/Modal";
+import { type FoodItem } from "../types";
+
+type FoodItemFormData = {
+  name: string;
+  quantity: string;
+  unit: string;
+  expiryDate: string;
+  location: string;
+  category: string;
+};
+
+const initialFoodItemFormData: FoodItemFormData = {
+  name: "",
+  quantity: "1",
+  unit: "",
+  expiryDate: "",
+  location: "",
+  category: "",
+};
 
 export const FoodItemListPage = () => {
   const { items, loading, error, refetchItems } = useFoodItems();
   const [isFoodAddModalOpen, setIsFoodAddModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [addFoodError, setAddFoodError] = useState("");
-  const [formData, setFormData] = useState({
-    name: "",
-    quantity: "1",
-    unit: "",
-    expiryDate: "",
-    location: "",
-    category: "",
-  });
+  const [addFormData, setAddFormData] =
+    useState<FoodItemFormData>(initialFoodItemFormData);
+  const [isFoodEditModalOpen, setIsFoodEditModalOpen] = useState(false);
+  const [editItemId, setEditItemId] = useState<number | null>(null);
+  const [editFoodError, setEditFoodError] = useState("");
+  const [editFormData, setEditFormData] =
+    useState<FoodItemFormData>(initialFoodItemFormData);
 
   const handleFoodAddButton = () => {
     setIsFoodAddModalOpen(true);
@@ -27,14 +45,42 @@ export const FoodItemListPage = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setAddFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFoodCardClick = (item: FoodItem) => {
+    setEditItemId(item.id);
+    setEditFormData({
+      name: item.name,
+      quantity: String(item.quantity),
+      unit: item.unit,
+      expiryDate: item.expiryDate.slice(0, 10),
+      location: item.location,
+      category: item.category,
+    });
+    setEditFoodError("");
+    setIsFoodEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setIsFoodEditModalOpen(false);
+    setEditItemId(null);
+    setEditFoodError("");
+    setEditFormData(initialFoodItemFormData);
   };
 
   const handleFoodAddSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setAddFoodError("");
 
-    const quantity = Number.parseInt(formData.quantity, 10);
+    const quantity = Number.parseInt(addFormData.quantity, 10);
     if (!Number.isInteger(quantity) || quantity <= 0) {
       setAddFoodError("数量は1以上の整数を入力してください。");
       return;
@@ -61,12 +107,12 @@ export const FoodItemListPage = () => {
             }
           `,
           variables: {
-            name: formData.name,
+            name: addFormData.name,
             quantity,
-            unit: formData.unit,
-            expiryDate: formData.expiryDate,
-            location: formData.location,
-            category: formData.category,
+            unit: addFormData.unit,
+            expiryDate: addFormData.expiryDate,
+            location: addFormData.location,
+            category: addFormData.category,
           },
         }),
       });
@@ -77,17 +123,73 @@ export const FoodItemListPage = () => {
 
       await refetchItems();
       setIsFoodAddModalOpen(false);
-      setFormData({
-        name: "",
-        quantity: "1",
-        unit: "",
-        expiryDate: "",
-        location: "",
-        category: "",
-      });
+      setAddFormData(initialFoodItemFormData);
     } catch (err) {
       setAddFoodError(
         err instanceof Error ? err.message : "食材の追加に失敗しました。",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleFoodEditSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setEditFoodError("");
+
+    if (editItemId === null) {
+      setEditFoodError("編集対象の食材が選択されていません。");
+      return;
+    }
+
+    const quantity = Number.parseInt(editFormData.quantity, 10);
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      setEditFoodError("数量は1以上の整数を入力してください。");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const res = await fetch("http://localhost:8080/graphql", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: `
+            mutation UpdateFoodItem($id: Int!, $name: String!, $quantity: Int!, $unit: String!, $expiryDate: String!, $location: String!, $category: String!) {
+              updateFoodItem(
+                id: $id
+                name: $name
+                quantity: $quantity
+                unit: $unit
+                expiryDate: $expiryDate
+                location: $location
+                category: $category
+              ) {
+                id
+              }
+            }
+          `,
+          variables: {
+            id: editItemId,
+            name: editFormData.name,
+            quantity,
+            unit: editFormData.unit,
+            expiryDate: editFormData.expiryDate,
+            location: editFormData.location,
+            category: editFormData.category,
+          },
+        }),
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.errors) throw new Error(data.errors[0].message);
+
+      await refetchItems();
+      closeEditModal();
+    } catch (err) {
+      setEditFoodError(
+        err instanceof Error ? err.message : "食材の更新に失敗しました。",
       );
     } finally {
       setIsSubmitting(false);
@@ -104,7 +206,13 @@ export const FoodItemListPage = () => {
         <div className="food-item-cards">
           {!loading &&
             !error &&
-            items.map((item) => <FoodItemCard key={item.id} item={item} />)}
+            items.map((item) => (
+              <FoodItemCard
+                key={item.id}
+                item={item}
+                onClick={() => handleFoodCardClick(item)}
+              />
+            ))}
         </div>
       </div>
       <div>
@@ -121,7 +229,7 @@ export const FoodItemListPage = () => {
               <input
                 id="name"
                 name="name"
-                value={formData.name}
+                value={addFormData.name}
                 onChange={handleFormChange}
                 required
               />
@@ -133,7 +241,7 @@ export const FoodItemListPage = () => {
                 name="quantity"
                 type="number"
                 min={1}
-                value={formData.quantity}
+                value={addFormData.quantity}
                 onChange={handleFormChange}
                 required
               />
@@ -143,7 +251,7 @@ export const FoodItemListPage = () => {
               <input
                 id="unit"
                 name="unit"
-                value={formData.unit}
+                value={addFormData.unit}
                 onChange={handleFormChange}
                 required
               />
@@ -154,7 +262,7 @@ export const FoodItemListPage = () => {
                 id="expiryDate"
                 name="expiryDate"
                 type="date"
-                value={formData.expiryDate}
+                value={addFormData.expiryDate}
                 onChange={handleFormChange}
                 required
               />
@@ -164,7 +272,7 @@ export const FoodItemListPage = () => {
               <input
                 id="location"
                 name="location"
-                value={formData.location}
+                value={addFormData.location}
                 onChange={handleFormChange}
                 required
               />
@@ -174,7 +282,7 @@ export const FoodItemListPage = () => {
               <input
                 id="category"
                 name="category"
-                value={formData.category}
+                value={addFormData.category}
                 onChange={handleFormChange}
                 required
               />
@@ -182,6 +290,82 @@ export const FoodItemListPage = () => {
             {addFoodError && <p className="error">エラー: {addFoodError}</p>}
             <button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "追加中..." : "追加"}
+            </button>
+          </form>
+        }
+      />
+      <Modal
+        isOpen={isFoodEditModalOpen}
+        onClose={closeEditModal}
+        title="食材を編集"
+        content={
+          <form onSubmit={handleFoodEditSubmit}>
+            <div>
+              <label htmlFor="edit-name">名前</label>
+              <input
+                id="edit-name"
+                name="name"
+                value={editFormData.name}
+                onChange={handleEditFormChange}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="edit-quantity">数量</label>
+              <input
+                id="edit-quantity"
+                name="quantity"
+                type="number"
+                min={1}
+                value={editFormData.quantity}
+                onChange={handleEditFormChange}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="edit-unit">単位</label>
+              <input
+                id="edit-unit"
+                name="unit"
+                value={editFormData.unit}
+                onChange={handleEditFormChange}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="edit-expiryDate">賞味期限</label>
+              <input
+                id="edit-expiryDate"
+                name="expiryDate"
+                type="date"
+                value={editFormData.expiryDate}
+                onChange={handleEditFormChange}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="edit-location">保管場所</label>
+              <input
+                id="edit-location"
+                name="location"
+                value={editFormData.location}
+                onChange={handleEditFormChange}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="edit-category">カテゴリ</label>
+              <input
+                id="edit-category"
+                name="category"
+                value={editFormData.category}
+                onChange={handleEditFormChange}
+                required
+              />
+            </div>
+            {editFoodError && <p className="error">エラー: {editFoodError}</p>}
+            <button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "更新中..." : "更新"}
             </button>
           </form>
         }
